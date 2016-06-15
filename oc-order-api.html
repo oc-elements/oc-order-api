@@ -1,0 +1,172 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../oc-core-utils/oc-api-provider-behaviour.html">
+
+<!--
+`<oc-order-api>` is used to make requests with Ordercloud's order api.
+-->
+<dom-module id="oc-order-api">
+
+  <template>
+    <iron-ajax id="findOrder"></iron-ajax>
+    <iron-ajax id="getOrder"></iron-ajax>
+    <iron-ajax id="getOrders"></iron-ajax>
+    <iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
+    <iron-ajax id="readyOrder" method="put" content-type="application/json"></iron-ajax>
+    <iron-ajax id="collectOrder" method="put" content-type="application/json"></iron-ajax>
+    <iron-ajax id="deliverOrder" method="put" content-type="application/json"></iron-ajax>
+    <iron-ajax id="rejectOrder" method="put" content-type="application/json"></iron-ajax>
+    <iron-ajax id="selfPickupOrder" method="put" content-type="application/json"></iron-ajax>
+    <iron-ajax id="assignDeliveryAgent" method="put"></iron-ajax>
+  </template>
+
+  <script>
+    (function () {
+      Polymer({
+        is: 'oc-order-api',
+        behaviors: [OC.Behaviours.ApiProvider],
+
+        /**
+         * Returns orders for the given reference.
+         * @param {Number|String} ref The order reference or ID
+         * @returns {Promise}
+         */
+        findOrder: function(ref) {
+          this.$.findOrder.url = this._url('orders/find/' + ref);
+          return this._generateRequest(this.$.findOrder);
+        },
+
+        /**
+         * Get order.
+         * @param {Number} id The order ID
+         * @returns {Promise}
+         */
+        getOrder: function(id) {
+          this.$.getOrder.url = this._url('orders/' + id);
+          return this._generateRequest(this.$.getOrder);
+        },
+
+        /**
+         * Returns all the orders for the organisation.
+         * @param {{
+         *  page: Number (default 1),
+         *  pageSize: Number (default 20),
+         *  orderStatuses: Number[],
+         *  paymentStatuses: String[],
+         *  sort: String (default 'date+'),
+         *  fromDate: String,
+         *  toDate: String,
+         * }} criteria
+         * @returns {Promise}
+         */
+        getOrders: function(criteria) {
+          this.$.getOrders.url = this._url('orders');
+          this.$.getOrders.params = {
+            'page': criteria.page || 1,
+            'pagesize': criteria.pageSize || 20,
+            'orderstatus': criteria.orderStatuses || [],
+            'paymentstatus': criteria.paymentStatuses || [],
+            'sort': criteria.sort || 'date+',
+            'fromDate': criteria.fromDate || [],
+            'toDate': criteria.toDate || []
+          };
+          return this._generateRequest(this.$.getOrders);
+        },
+
+        /**
+         * Accept the order
+         * @param {Number} id The ID of the order to accept
+         * @param {Number} organisationId The ID of the organisation accepting the order
+         * @param {Number} estReadyTime In minutes
+         * @param {String} message
+         * @returns {Promise}
+         */
+        acceptOrder: function(id, organisationId, estReadyTime, message) {
+          this.$.acceptOrder.url = this._url('orders/' + id + '/organisation/' + organisationId + '/status/accept');
+          this.$.acceptOrder.body = {
+            message: message || '',
+            estimatedReadyTime: estReadyTime || 0
+          };
+          return this._generateRequest(this.$.acceptOrder);
+        },
+
+        /**
+         * Ready the order
+         * @param {Number} id The ID of the order to accept
+         * @param {Number} organisationId The ID of the organisation readying the order
+         * @param {String} message
+         * @returns {Promise}
+         */
+        readyOrder: function(id, organisationId, message) {
+          this.$.readyOrder.url = this._url('orders/' + id + '/organisation/' + organisationId + '/status/ready');
+          this.$.readyOrder.body = {message: message || ''};
+          return this._generateRequest(this.$.readyOrder);
+        },
+
+        /**
+         * Collect the order
+         * @param {Number} id The ID of the order to accept
+         * @param {Number} organisationId The ID of the organisation collecting the order
+         * @param {String} message
+         * @returns {Promise}
+         */
+        collectOrder: function(id, organisationId, message) {
+          this.$.collectOrder.url = this._url('orders/' + id + '/organisation/' + organisationId + '/status/collected');
+          this.$.collectOrder.body = {message: message || ''};
+          return this._generateRequest(this.$.collectOrder);
+        },
+
+        /**
+         * Deliver the order
+         * @param {Number} id The ID of the order to accept
+         * @param {Number} organisationId The ID of the organisation delivering the order
+         * @param {String} message
+         * @returns {Promise}
+         */
+        deliverOrder: function(id) {
+          this.$.deliverOrder.url = this._url('orders/' + id + '/status/delivered');
+          return this._generateRequest(this.$.deliverOrder);
+        },
+
+        /**
+         * Reject the order
+         * @param {Number} id The ID of the order to accept
+         * @param {Number} organisationId The ID of the organisation rejecting the order
+         * @param {String} message
+         * @returns {Promise}
+         */
+        rejectOrder: function(id, organisationId, message) {
+          this.$.rejectOrder.url = this._url('orders/' + id + '/organisation/' + organisationId + '/status/declined');
+          this.$.rejectOrder.body = {message: message || ''};
+          return this._generateRequest(this.$.rejectOrder);
+        },
+
+        /**
+         * Self pickup the order
+         * @param {Number} id The ID of the order to accept
+         * @param {Number} organisationId The ID of the organisation self pickuping the order
+         * @param {String} message
+         * @returns {Promise}
+         */
+        selfPickupOrder: function(id, organisationId, message) {
+          this.$.selfPickupOrder.url = this._url('orders/' + id + '/organisation/' + organisationId + '/status/self_picked_up');
+          this.$.selfPickupOrder.body = {message: message || ''};
+          return this._generateRequest(this.$.selfPickupOrder);
+        },
+
+        /**
+         * Assign a delivery agent to the order
+         * @param {Number} id The ID of the order to accept
+         * @param {Number} deliveryAgentId The ID of the delivery agent to assign to the order
+         * @returns {Promise}
+         */
+        assignDeliveryAgent: function(id, deliveryAgentId) {
+          this.$.assignDeliveryAgent.url = this._url('orders/' + id + '/agent/' + deliveryAgentId);
+          return this._generateRequest(this.$.assignDeliveryAgent);
+        }
+
+      });
+    })();
+  </script>
+
+</dom-module>
