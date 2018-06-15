@@ -4,50 +4,51 @@
 
 
 <dom-module id="oc-order-api">
-  <template>
-    <iron-ajax id="findOrder"></iron-ajax>
-    <iron-ajax id="getOrder"></iron-ajax>
-    <iron-ajax id="getOrders"></iron-ajax>
-    <iron-ajax id="payForOrder"></iron-ajax>
-    <iron-ajax id="getOrderStatusses"></iron-ajax>
-    <iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
-    <iron-ajax id="readyOrder" method="put" content-type="application/json"></iron-ajax>
-    <iron-ajax id="collectOrder" method="put" content-type="application/json"></iron-ajax>
-    <iron-ajax id="deliverOrder" method="put" content-type="application/json"></iron-ajax>
-    <iron-ajax id="rejectOrder" method="put" content-type="application/json"></iron-ajax>
-    <iron-ajax id="selfPickupOrder" method="put" content-type="application/json"></iron-ajax>
-    <iron-ajax id="assignDeliveryAgent" method="put"></iron-ajax>
-  </template>
+    <template>
+        <iron-ajax id="findOrder"></iron-ajax>
+        <iron-ajax id="getOrder"></iron-ajax>
+        <iron-ajax id="getOrders"></iron-ajax>
+        <iron-ajax id="payForOrder"></iron-ajax>
+        <iron-ajax id="getOrderStatusses"></iron-ajax>
+        <iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
+        <iron-ajax id="readyOrder" method="put" content-type="application/json"></iron-ajax>
+        <iron-ajax id="collectOrder" method="put" content-type="application/json"></iron-ajax>
+        <iron-ajax id="deliverOrder" method="put" content-type="application/json"></iron-ajax>
+        <iron-ajax id="rejectOrder" method="put" content-type="application/json"></iron-ajax>
+        <iron-ajax id="selfPickupOrder" method="put" content-type="application/json"></iron-ajax>
+        <iron-ajax id="assignDeliveryAgent" method="put"></iron-ajax>
+    </template>
 
-  <script>
+    <script>
 
-      class OcOrderApi extends Ordercloud.ApiMixin(Polymer.Element) {
-          static get is() {
-              return 'oc-order-api';
-          }
-          static get properties() {
-              return {};
-          }
+		class OcOrderApi extends Ordercloud.ApiMixin(Polymer.Element) {
+			static get is() {
+				return 'oc-order-api';
+			}
+
+			static get properties() {
+				return {};
+			}
 
 
-          findOrder(ref) {
-              this.$.findOrder.url = this._generateUrl('orders/find/' + ref);
-              return this._generateRequest(this.$.findOrder);
-          }
+			findOrder(ref) {
+				this.$.findOrder.url = this._generateUrl('orders/find/' + ref);
+				return this._generateRequest(this.$.findOrder);
+			}
 
-          /**
-           * Get order.
-           * @param {Number} id The order ID
-           * @returns {Promise}
-           */
-          getOrder(id) {
-              this.$.getOrder.url = this._generateUrl('orders/' + id);
-              return this._generateRequest(this.$.getOrder);
-          }
+			/**
+			 * Get order.
+			 * @param {Number} id The order ID
+			 * @returns {Promise}
+			 */
+			getOrder(id) {
+				this.$.getOrder.url = this._generateUrl('orders/' + id);
+				return this._generateRequest(this.$.getOrder);
+			}
 
-          /**
-           * Returns all the orders for the organisation.
-           * @param {{
+			/**
+			 * Returns all the orders for the organisation.
+			 * @param {{
          *  page: Number (default 1),
          *  pageSize: Number (default 20),
          *  orderStatuses: Number[],
@@ -56,139 +57,151 @@
          *  fromDate: String,
          *  toDate: String,
          * }} criteria
-           * @returns {Promise}
-           */
-          getOrders(criteria) {
-              this.$.getOrders.url = this._generateUrl('orders');
-              this.$.getOrders.params = {
-                  'page': (criteria.page === null || criteria.page === undefined) ? 0 : criteria.page,
-                  'pagesize': criteria.pageSize || 20,
-                  'orderstatus': criteria.orderStatuses || [],
-                  'paymentstatus': criteria.paymentStatuses || [],
-                  'sort': criteria.sort || 'date+',
-                  'fromDate': criteria.fromDate || [],
-                  'toDate': criteria.toDate || []
-              };
-              return this._generateRequest(this.$.getOrders);
-          }
+			 * @returns {Promise}
+			 */
+			getOrders(criteria) {
+				this.$.getOrders.url = this._generateUrl('orders');
+				this.$.getOrders.params = {
+					'page': (criteria.page === null || criteria.page === undefined) ? 0 : criteria.page,
+					'pagesize': criteria.pageSize || 20,
+					'orderstatus': criteria.orderStatuses || [],
+					'paymentstatus': criteria.paymentStatuses || [],
+					'sort': criteria.sort || 'date+',
+					'fromDate': criteria.fromDate || [],
+					'toDate': criteria.toDate || []
+				};
+				return this._generateRequest(this.$.getOrders);
+			}
 
-          /**
-           * Accept the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} organisationId The ID of the organisation accepting the order
-           * @param {Number} estReadyTime In minutes
-           * @param {String} message
-           * @returns {Promise}
-           */
-          acceptOrder(id, organisationId, estReadyTime, message) {
-              this.$.acceptOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/accept');
-              this.$.acceptOrder.body = {
-                  message: message || '',
-                  estimatedReadyTime: estReadyTime || 0
-              };
-              return this._generateRequest(this.$.acceptOrder);
-          }
+			/* Calculate delivery cost */
+			getDeliveryCost(marketplaceId, organisationId, geoId) {
+				this.$.getDeliveryCost.url = this.getDeliveryCost(`orders/organisation/${marketplaceId}/delivery/geo/${geoId}`);
+				this.$.getDeliveryCost.body = [
+					{
+						id: organisationId
+					}
+				];
+				return this._generateRequest(this.$.getDeliveryCost);
+			}
 
-          /**
-           * Ready the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} organisationId The ID of the organisation readying the order
-           * @param {String} message
-           * @returns {Promise}
-           */
-          readyOrder(id, organisationId, message) {
-              this.$.readyOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/ready');
-              this.$.readyOrder.body = {message: message || ''};
-              return this._generateRequest(this.$.readyOrder);
-          }
+			/**
+			 * Accept the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} organisationId The ID of the organisation accepting the order
+			 * @param {Number} estReadyTime In minutes
+			 * @param {String} message
+			 * @returns {Promise}
+			 */
+			acceptOrder(id, organisationId, estReadyTime, message) {
+				this.$.acceptOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/accept');
+				this.$.acceptOrder.body = {
+					message: message || '',
+					estimatedReadyTime: estReadyTime || 0
+				};
+				return this._generateRequest(this.$.acceptOrder);
+			}
 
-          /**
-           * Collect the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} organisationId The ID of the organisation collecting the order
-           * @param {String} message
-           * @returns {Promise}
-           */
-          collectOrder(id, organisationId, message) {
-              this.$.collectOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/collected');
-              this.$.collectOrder.body = {message: message || ''};
-              return this._generateRequest(this.$.collectOrder);
-          }
+			/**
+			 * Ready the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} organisationId The ID of the organisation readying the order
+			 * @param {String} message
+			 * @returns {Promise}
+			 */
+			readyOrder(id, organisationId, message) {
+				this.$.readyOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/ready');
+				this.$.readyOrder.body = {message: message || ''};
+				return this._generateRequest(this.$.readyOrder);
+			}
 
-          /**
-           * Deliver the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} organisationId The ID of the organisation delivering the order
-           * @param {String} message
-           * @returns {Promise}
-           */
-          deliverOrder(id) {
-              this.$.deliverOrder.url = this._generateUrl('orders/' + id + '/status/delivered');
-              return this._generateRequest(this.$.deliverOrder);
-          }
+			/**
+			 * Collect the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} organisationId The ID of the organisation collecting the order
+			 * @param {String} message
+			 * @returns {Promise}
+			 */
+			collectOrder(id, organisationId, message) {
+				this.$.collectOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/collected');
+				this.$.collectOrder.body = {message: message || ''};
+				return this._generateRequest(this.$.collectOrder);
+			}
 
-          /**
-           * Reject the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} organisationId The ID of the organisation rejecting the order
-           * @param {String} message
-           * @returns {Promise}
-           */
-          rejectOrder(id, organisationId, message) {
-              this.$.rejectOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/declined');
-              this.$.rejectOrder.body = {message: message || ''};
-              return this._generateRequest(this.$.rejectOrder);
-          }
+			/**
+			 * Deliver the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} organisationId The ID of the organisation delivering the order
+			 * @param {String} message
+			 * @returns {Promise}
+			 */
+			deliverOrder(id) {
+				this.$.deliverOrder.url = this._generateUrl('orders/' + id + '/status/delivered');
+				return this._generateRequest(this.$.deliverOrder);
+			}
 
-          /**
-           * Self pickup the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} organisationId The ID of the organisation self pickuping the order
-           * @param {String} message
-           * @returns {Promise}
-           */
-          selfPickupOrder(id, organisationId, message) {
-              this.$.selfPickupOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/self_picked_up');
-              this.$.selfPickupOrder.body = {message: message || ''};
-              return this._generateRequest(this.$.selfPickupOrder);
-          }
-          /**
-           * Self pickup the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} organisationId The ID of the organisation self pickuping the order
-           * @param {String} message
-           * @returns {Promise}
-           */
-          payForOrder(id, accountId) {
-              this.$.payForOrder.url = this._generateUrl('orders/' + id + '/pay/account/' + accountId);
-              this.$.payForOrder.method = "POST";
-              this.$.payForOrder.contentType = "application/json";
-              return this._generateRequest(this.$.payForOrder);
-          }
+			/**
+			 * Reject the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} organisationId The ID of the organisation rejecting the order
+			 * @param {String} message
+			 * @returns {Promise}
+			 */
+			rejectOrder(id, organisationId, message) {
+				this.$.rejectOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/declined');
+				this.$.rejectOrder.body = {message: message || ''};
+				return this._generateRequest(this.$.rejectOrder);
+			}
 
-          /**
-           * Assign a delivery agent to the order
-           * @param {Number} id The ID of the order to accept
-           * @param {Number} deliveryAgentId The ID of the delivery agent to assign to the order
-           * @returns {Promise}
-           */
-          assignDeliveryAgent(id, deliveryAgentId) {
-              this.$.assignDeliveryAgent.url = this._generateUrl('orders/' + id + '/agent/' + deliveryAgentId);
-              return this._generateRequest(this.$.assignDeliveryAgent);
-          }
+			/**
+			 * Self pickup the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} organisationId The ID of the organisation self pickuping the order
+			 * @param {String} message
+			 * @returns {Promise}
+			 */
+			selfPickupOrder(id, organisationId, message) {
+				this.$.selfPickupOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/self_picked_up');
+				this.$.selfPickupOrder.body = {message: message || ''};
+				return this._generateRequest(this.$.selfPickupOrder);
+			}
 
-		  /**
-		   * Get lookup of order statusses
-		   * @returns {Promise}
-		   */
-		  getOrderStatusses() {
-			  this.$.getOrderStatusses.url = this._generateUrl('orderstatus');
-			  return this._generateRequest(this.$.getOrderStatusses);
-		  }
+			/**
+			 * Self pickup the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} organisationId The ID of the organisation self pickuping the order
+			 * @param {String} message
+			 * @returns {Promise}
+			 */
+			payForOrder(id, accountId) {
+				this.$.payForOrder.url = this._generateUrl('orders/' + id + '/pay/account/' + accountId);
+				this.$.payForOrder.method = "POST";
+				this.$.payForOrder.contentType = "application/json";
+				return this._generateRequest(this.$.payForOrder);
+			}
 
-      }
+			/**
+			 * Assign a delivery agent to the order
+			 * @param {Number} id The ID of the order to accept
+			 * @param {Number} deliveryAgentId The ID of the delivery agent to assign to the order
+			 * @returns {Promise}
+			 */
+			assignDeliveryAgent(id, deliveryAgentId) {
+				this.$.assignDeliveryAgent.url = this._generateUrl('orders/' + id + '/agent/' + deliveryAgentId);
+				return this._generateRequest(this.$.assignDeliveryAgent);
+			}
 
-      window.customElements.define(OcOrderApi.is, OcOrderApi);
-  </script>
+			/**
+			 * Get lookup of order statusses
+			 * @returns {Promise}
+			 */
+			getOrderStatusses() {
+				this.$.getOrderStatusses.url = this._generateUrl('orderstatus');
+				return this._generateRequest(this.$.getOrderStatusses);
+			}
+
+		}
+
+		window.customElements.define(OcOrderApi.is, OcOrderApi);
+    </script>
 </dom-module>
 
