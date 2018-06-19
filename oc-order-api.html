@@ -8,6 +8,8 @@
         <iron-ajax id="findOrder"></iron-ajax>
         <iron-ajax id="getOrder"></iron-ajax>
         <iron-ajax id="getOrders"></iron-ajax>
+        <iron-ajax id="getOrdersByOrganisation"></iron-ajax>
+        <iron-ajax id="getDeliveryCost"></iron-ajax>
         <iron-ajax id="payForOrder"></iron-ajax>
         <iron-ajax id="getOrderStatusses"></iron-ajax>
         <iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
@@ -73,7 +75,21 @@
 				return this._generateRequest(this.$.getOrders);
 			}
 
-			/* Calculate delivery cost */
+			/* Fetch Orders by Organisation Id */
+			getOrdersByOrganisation(orgId, criteria) {
+				this.$.getOrdersByOrganisation.url = this._generateUrl(`orders/organisation/${orgId}`);
+				this.$.getOrdersByOrganisation.params = {
+					'page': (!criteria.page) ? -1 : criteria.page,
+					'pagesize': criteria.pageSize || 20,
+					'orderstatus': criteria.orderStatuses || [],
+					'paymentstatus': criteria.paymentStatuses || [],
+					'sort': criteria.sort || 'date+',
+					'fromDate': criteria.fromDate || [],
+					'toDate': criteria.toDate || []
+				};
+				return this._generateRequest(this.$.getOrdersByOrganisation);
+			}
+
 			getDeliveryCost(marketplaceId, organisationId, geoId) {
 				this.$.getDeliveryCost.url = this.getDeliveryCost(`orders/organisation/${marketplaceId}/delivery/geo/${geoId}`);
 				this.$.getDeliveryCost.body = [
