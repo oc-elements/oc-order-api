@@ -4,24 +4,25 @@
 
 
 <dom-module id="oc-order-api">
-    <template>
-        <iron-ajax id="findOrder"></iron-ajax>
-        <iron-ajax id="getOrder"></iron-ajax>
-        <iron-ajax id="getOrders"></iron-ajax>
-        <iron-ajax id="getOrdersByOrganisation"></iron-ajax>
-        <iron-ajax id="getDeliveryCost"></iron-ajax>
-        <iron-ajax id="payForOrder"></iron-ajax>
-        <iron-ajax id="getOrderStatusses"></iron-ajax>
-        <iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
-        <iron-ajax id="readyOrder" method="put" content-type="application/json"></iron-ajax>
-        <iron-ajax id="collectOrder" method="put" content-type="application/json"></iron-ajax>
-        <iron-ajax id="deliverOrder" method="put" content-type="application/json"></iron-ajax>
-        <iron-ajax id="rejectOrder" method="put" content-type="application/json"></iron-ajax>
-        <iron-ajax id="selfPickupOrder" method="put" content-type="application/json"></iron-ajax>
-        <iron-ajax id="assignDeliveryAgent" method="put"></iron-ajax>
-    </template>
+	<template>
+		<iron-ajax id="findOrder"></iron-ajax>
+		<iron-ajax id="getOrder"></iron-ajax>
+		<iron-ajax id="getOrders"></iron-ajax>
+		<iron-ajax id="getOrdersByOrganisation"></iron-ajax>
+		<iron-ajax id="getDeliveryCost"></iron-ajax>
+		<iron-ajax id="payForOrder"></iron-ajax>
+		<iron-ajax id="payOrder"></iron-ajax>
+		<iron-ajax id="getOrderStatusses"></iron-ajax>
+		<iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
+		<iron-ajax id="readyOrder" method="put" content-type="application/json"></iron-ajax>
+		<iron-ajax id="collectOrder" method="put" content-type="application/json"></iron-ajax>
+		<iron-ajax id="deliverOrder" method="put" content-type="application/json"></iron-ajax>
+		<iron-ajax id="rejectOrder" method="put" content-type="application/json"></iron-ajax>
+		<iron-ajax id="selfPickupOrder" method="put" content-type="application/json"></iron-ajax>
+		<iron-ajax id="assignDeliveryAgent" method="put"></iron-ajax>
+	</template>
 
-    <script>
+	<script>
 
 		class OcOrderApi extends Ordercloud.ApiMixin(Polymer.Element) {
 			static get is() {
@@ -30,6 +31,25 @@
 
 			static get properties() {
 				return {};
+			}
+
+			payOrder(fromAccountId, orderId) {
+				const params = {
+					body: JSON.stringify({
+						fromAccountId,
+						orderId
+					})
+				}
+
+
+				this.$.payOrder.url = this._generateUrl('transactions/order-payment');
+				this.$.payOrder.body = {
+					fromAccountId,
+					orderId
+				};
+				this.$.payOrder.method = "POST";
+				this.$.payOrder.contentType = "application/json";
+				return this._generateRequest(this.$.payOrder);
 			}
 
 
@@ -126,7 +146,7 @@
 			 */
 			readyOrder(id, organisationId, message) {
 				this.$.readyOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/ready');
-				this.$.readyOrder.body = {message: message || ''};
+				this.$.readyOrder.body = { message: message || '' };
 				return this._generateRequest(this.$.readyOrder);
 			}
 
@@ -139,7 +159,7 @@
 			 */
 			collectOrder(id, organisationId, message) {
 				this.$.collectOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/collected');
-				this.$.collectOrder.body = {message: message || ''};
+				this.$.collectOrder.body = { message: message || '' };
 				return this._generateRequest(this.$.collectOrder);
 			}
 
@@ -164,7 +184,7 @@
 			 */
 			rejectOrder(id, organisationId, message) {
 				this.$.rejectOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/declined');
-				this.$.rejectOrder.body = {message: message || ''};
+				this.$.rejectOrder.body = { message: message || '' };
 				return this._generateRequest(this.$.rejectOrder);
 			}
 
@@ -177,7 +197,7 @@
 			 */
 			selfPickupOrder(id, organisationId, message) {
 				this.$.selfPickupOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/self_picked_up');
-				this.$.selfPickupOrder.body = {message: message || ''};
+				this.$.selfPickupOrder.body = { message: message || '' };
 				return this._generateRequest(this.$.selfPickupOrder);
 			}
 
@@ -218,6 +238,5 @@
 		}
 
 		window.customElements.define(OcOrderApi.is, OcOrderApi);
-    </script>
+	</script>
 </dom-module>
-
