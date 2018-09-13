@@ -13,6 +13,7 @@
 		<iron-ajax id="payForOrder"></iron-ajax>
 		<iron-ajax id="payOrder"></iron-ajax>
 		<iron-ajax id="getOrderStatusses"></iron-ajax>
+		<iron-ajax id="pendingOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="readyOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="collectOrder" method="put" content-type="application/json"></iron-ajax>
@@ -118,6 +119,11 @@
 					}
 				];
 				return this._generateRequest(this.$.getDeliveryCost);
+			}
+
+			pendingOrder(orderId) {
+				this.$.pendingOrder.url = this._generateUrl('orders/' + orderId + '/status/pending');
+				return this._generateRequest(this.$.pendingOrder);
 			}
 
 			/**
