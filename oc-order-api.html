@@ -13,6 +13,7 @@
 		<iron-ajax id="payForOrder"></iron-ajax>
 		<iron-ajax id="payOrder"></iron-ajax>
 		<iron-ajax id="getOrderStatusses"></iron-ajax>
+		<iron-ajax id="createGrn"></iron-ajax>
 		<iron-ajax id="pendingOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="cancelOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
@@ -20,7 +21,7 @@
 		<iron-ajax id="collectOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="deliverOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="rejectOrder" method="put" content-type="application/json"></iron-ajax>
-		<iron-ajax id="selfPickupOrder" method="put" content-type="application/json"></iron-ajax>
+		<iron-ajax id="inTransit" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="assignDeliveryAgent" method="put"></iron-ajax>
 	</template>
 
@@ -200,17 +201,11 @@
 				return this._generateRequest(this.$.rejectOrder);
 			}
 
-			/**
-			 * Self pickup the order
-			 * @param {Number} id The ID of the order to accept
-			 * @param {Number} organisationId The ID of the organisation self pickuping the order
-			 * @param {String} message
-			 * @returns {Promise}
-			 */
-			selfPickupOrder(id, organisationId, message) {
-				this.$.selfPickupOrder.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/self_picked_up');
-				this.$.selfPickupOrder.body = { message: message || '' };
-				return this._generateRequest(this.$.selfPickupOrder);
+			/* Set order in transit. Its next status will be delivered*/
+			inTransit(id, organisationId, message) {
+				this.$.inTransit.url = this._generateUrl('orders/' + id + '/organisation/' + organisationId + '/status/in_transit');
+				this.$.inTransit.body = { message: message || '' };
+				return this._generateRequest(this.$.inTransit);
 			}
 
 			/**
@@ -245,6 +240,15 @@
 			getOrderStatusses() {
 				this.$.getOrderStatusses.url = this._generateUrl('orderstatus');
 				return this._generateRequest(this.$.getOrderStatusses);
+			}
+
+			/* Create grn for an order */
+			createGrn(orderId, grn) {
+				this.$.createGrn.url = this._generateUrl(`orders/${orderId}/grn`);
+				this.$.createGrn.method = "PUT";
+				this.$.createGrn.contentType = "application/json";
+				this.$.createGrn.body = { grn: grn || '' };
+				return this._generateRequest(this.$.createGrn);
 			}
 
 		}
