@@ -8,6 +8,7 @@
 		<iron-ajax id="findOrder"></iron-ajax>
 		<iron-ajax id="getOrder"></iron-ajax>
 		<iron-ajax id="getOrders"></iron-ajax>
+		<iron-ajax id="searchOrder"></iron-ajax>
 		<iron-ajax id="getOrdersByOrganisation"></iron-ajax>
 		<iron-ajax id="getDeliveryCost"></iron-ajax>
 		<iron-ajax id="payForOrder"></iron-ajax>
@@ -96,6 +97,13 @@
 					'toDate': criteria.toDate || []
 				};
 				return this._generateRequest(this.$.getOrders);
+			}
+
+			/* Search for a specific order by id */
+			searchOrder(orderId) {
+				this.$.searchOrder.url = this._generateUrl('orders/' + orderId);
+				this.$.searchOrder.method = 'GET';
+				return this._generateRequest(this.$.searchOrder);
 			}
 
 			/* Fetch Orders by Organisation Id */
