@@ -15,6 +15,7 @@
 		<iron-ajax id="payOrder"></iron-ajax>
 		<iron-ajax id="getOrderStatusses"></iron-ajax>
 		<iron-ajax id="createGrn"></iron-ajax>
+		<iron-ajax id="getEstimateDeliveryCost"></iron-ajax>
 		<iron-ajax id="pendingOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="cancelOrder" method="put" content-type="application/json"></iron-ajax>
 		<iron-ajax id="acceptOrder" method="put" content-type="application/json"></iron-ajax>
@@ -105,6 +106,14 @@
 				this.$.searchOrder.method = 'GET';
 				return this._generateRequest(this.$.searchOrder);
 			}
+			/* get estimate delivery cost
+			GET /orders/organisation/{organisationId}/delivery/address/{locationId}
+			*/
+			getEstimateDeliveryCost(organisationId, locationId) {
+				this.$.getEstimateDeliveryCost.url = this._generateUrl('orders/organisation/' + organisationId + '/delivery/address/' + locationId);
+				this.$.getEstimateDeliveryCost.method = 'GET';
+				return this._generateRequest(this.$.getEstimateDeliveryCost);
+			}
 
 			/* Fetch Orders by Organisation Id */
 			getOrdersByOrganisation(orgId, criteria) {
@@ -114,7 +123,7 @@
 					'pagesize': criteria.pageSize || 20,
 					'orderstatus': criteria.orderStatuses || [],
 					'paymentstatus': criteria.paymentStatuses || [],
-					'sort': criteria.sort || 'date+',
+					'sort': criteria.sort || 'date-',
 					'fromDate': criteria.fromDate || [],
 					'toDate': criteria.toDate || []
 				};
